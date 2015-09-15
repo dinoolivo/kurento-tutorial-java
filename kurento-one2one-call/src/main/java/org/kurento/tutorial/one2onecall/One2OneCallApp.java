@@ -14,7 +14,12 @@
  */
 package org.kurento.tutorial.one2onecall;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import java.lang.reflect.Type;
 import org.kurento.client.KurentoClient;
+import org.kurento.tutorial.one2onecall.data.Request;
+import org.kurento.tutorial.one2onecall.data.User;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -53,6 +58,7 @@ public class One2OneCallApp implements WebSocketConfigurer {
 				DEFAULT_KMS_WS_URI));
 	}
 
+        @Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 		registry.addHandler(callHandler(), "/call");
 	}

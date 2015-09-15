@@ -27,6 +27,7 @@ const NOT_REGISTERED = 0;
 const REGISTERING = 1;
 const REGISTERED = 2;
 
+
 function setRegisterState(nextState) {
 	switch (nextState) {
 	case NOT_REGISTERED:
@@ -112,6 +113,11 @@ ws.onmessage = function(message) {
 				return console.error('Error adding candidate: ' + error);
 		});
 		break;
+        case 'usrListResponse': 
+                console.info("received user list!!");
+                console.info(message.data);
+                break;
+        
 	default:
 		console.error('Unrecognized message', parsedMessage);
 	}

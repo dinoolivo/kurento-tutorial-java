@@ -1,0 +1,22 @@
+<div class="container">  
+    <div id="registerbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2"> 
+        <div class="panel panel-info" >
+            <div class="panel-heading">
+                <div class="panel-title">Register</div>      
+            </div>
+            <div style="padding-top:30px" class="panel-body" >
+                <div ng-class="rg.displayIfError()" id="login-alert" class="alert alert-danger col-sm-12">{{rg.error.message}}</div>
+                <form novalidate class="form-horizontal" role="form">
+                    <div style="margin-bottom: 25px" class="input-group">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                        <input type="text" class="form-control" ng-model="rg.user.username" id="usernameInput" placeholder="Username">
+                    </div>
+                    <input type="submit" ng-click="rg.register(rg.user)" class="btn btn-succes" value="Register" />
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+

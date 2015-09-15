@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html ng-app="o2o">
+    <head>
+        <title>One2One call demo</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet"
+	href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+        
+        <script src="/bower_components/angular/angular.min.js"></script>
+        <script src="/bower_components/angular-route/angular-route.min.js"></script>
+        <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="/bower_components/ng-websocket/ng-websocket.js"></script>
+         
+        <script src="one2one.js"></script>
+        <script src="/register/register.js"></script>
+        <script src="/main/main.js"></script>
+        <script src="/services/wsService.js"></script>
+        <script src="/services/userService.js"></script>
+        
+    </head>
+    <body>
+        <div ng-view></div>
+    </body>
+</html>
