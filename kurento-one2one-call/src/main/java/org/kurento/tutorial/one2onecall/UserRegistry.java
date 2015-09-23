@@ -16,13 +16,15 @@ package org.kurento.tutorial.one2onecall;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.kurento.tutorial.one2onecall.codes.StatusCode;
 import org.kurento.tutorial.one2onecall.data.Request;
+import org.kurento.tutorial.one2onecall.data.Response;
 import org.kurento.tutorial.one2onecall.data.User;
+import org.kurento.tutorial.one2onecall.data.UserList;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.web.socket.WebSocketSession;
@@ -38,7 +40,6 @@ import org.springframework.web.socket.WebSocketSession;
 public class UserRegistry {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(UserRegistry.class);
-    private static final Gson gson = new GsonBuilder().create();
     private final ConcurrentHashMap<String, UserSession> usersByName = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, UserSession> usersBySessionId = new ConcurrentHashMap<>();
 
@@ -48,7 +49,7 @@ public class UserRegistry {
         
         log.debug("user #{} registered. Sending notification to all users..",userSession.getUser().getUsername());
         //send notification to all users
-        notifyUsers(new Request<>(WsEndpoints.USRS_LIST,getUsersList()).toJsonStr());
+        notifyUsers(getUsrListUpdate());
     }
 
     public UserSession getByName(String name) {
@@ -60,13 +61,19 @@ public class UserRegistry {
     }
 
     public boolean exists(String name) {
-        return usersByName.keySet().contains(name);
+        return usersByName.containsKey(name);
     }
     
     public void changeUserStatus(String username,UserCallStatus userCallStatus){
         this.usersByName.get(username).getUser().setStatus(userCallStatus);
         
-        notifyUsers(new Request<>(WsEndpoints.USRS_LIST,getUsersList()).toJsonStr());
+        notifyUsers(getUsrListUpdate());
+    }
+    
+    public void changeUserStatus(WebSocketSession session,UserCallStatus userCallStatus){
+        this.usersBySessionId.get(session.getId()).getUser().setStatus(userCallStatus);
+        
+        notifyUsers(getUsrListUpdate());
     }
 
     public UserSession removeBySession(WebSocketSession session) {
@@ -76,7 +83,7 @@ public class UserRegistry {
             usersBySessionId.remove(session.getId());
             
             //send notification to all users
-            notifyUsers(new Request<>(WsEndpoints.USRS_LIST,getUsersList()).toJsonStr());
+            notifyUsers(getUsrListUpdate());
         }
         return userSession;
     }
@@ -84,6 +91,14 @@ public class UserRegistry {
     public List<User> getUsersList() {
         return usersByName.values().stream().map(userSession -> userSession.getUser())
                 .collect(Collectors.toList());
+    }
+    
+    
+    //temporary 
+    private String getUsrListUpdate(){
+        return new Response.ResponseBuilder<>(WsEndpoints.USRS_LIST)
+                                                    .status(StatusCode.OK.intValue())
+                                                    .response(new UserList(getUsersList())).build().toJsonStr();
     }
 
     public void notifyUsers(String message) {

@@ -5,8 +5,10 @@ public class WsEndpoints {
     
     public static final String REGISTER = "register";
     public static final String USRS_LIST = "userList";
+    public static final String CHANGE_USER_STATUS = "changeUserStatus";
     public static final String CALL = "call";
     public static final String INCOMING_CALL = "incomingCall";
+    public static final String ICE_CANDIDATE = "iceCandidate";
     
     
     

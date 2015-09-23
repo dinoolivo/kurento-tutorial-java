@@ -31,6 +31,14 @@ body {
     display:block;
 }
 
+.withMarginTop{
+    margin-top: 1em;
+}
+
+.withPointer{
+    cursor:pointer;
+}
+
 video, #console {
 	display: block;
 	font-size: 14px;

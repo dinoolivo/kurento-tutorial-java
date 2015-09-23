@@ -87,12 +87,12 @@ public class UserSession {
 	}
 
 	public void sendMessage(JsonObject message) throws IOException {
-		log.debug("Sending message from user '{}': {}", user.getUsername(), message);
+		log.debug("Sending message to user '{}': {}", user.getUsername(), message);
 		session.sendMessage(new TextMessage(message.toString()));
 	}
         
         public void sendMessage(String message) throws IOException {
-		log.debug("Sending message from user '{}': {}", user.getUsername(), message);
+		log.debug("Sending message to user '{}': {}", user.getUsername(), message);
 		session.sendMessage(new TextMessage(message));
 	}
 

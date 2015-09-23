@@ -1,4 +1,73 @@
-<nav class="navbar navbar-inverse">
-    
-</nav>
-{{mrg.currentUser}}
+<div class="container"> 
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand">O2O</a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a>{{mrg.currentUser.username}}</a></li>
+                    <li>
+                        <form name="availForm">
+                            <select class="span2 navbar-btn withMarginTop" id="availSelect"
+                                    ng-options="userStatus for userStatus in mrg.userStatuses"
+                                    ng-model="mrg.currStatus"
+                                    ng-change="mrg.changeUserStatus(mrg.currStatus)"></select>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>       
+    </nav>
+
+
+    <div class="row">
+        <div ng-show="mrg.showCP" class="col-lg-9">
+
+            <div class="row">
+                <div class="col-md-9">
+                    <div id="VB">
+                        <video id="videoOutput" autoplay 
+                               poster="/img/webrtc.png"></video>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="row">                  
+                            <a href="#" class="btn btn-success col-md-6">Call</a>
+                            <a href="#" class="btn btn-primary col-md-6">Chat</a>                  
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-class="{'col-lg-offset-9 col-lg-3':!mrg.showCP,'col-lg-3':mrg.showCP}">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="panel-title">Users List</div>      
+                </div>
+                <div style="padding-top:30px" class="panel-body" >
+
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th><span>User</span></th>
+                                <th><span>Status</span></th>
+                            </tr>
+                        </thead>
+                        <tbody  ng-repeat="usr in mrg.users.lst">
+                            <tr ng-click="mrg.showCallPanel(usr)" class="withPointer">
+                                <td>{{usr.username}}</td><td><span ng-class="mrg.setLabelClassFromStatus(usr.status)">{{usr.status}}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

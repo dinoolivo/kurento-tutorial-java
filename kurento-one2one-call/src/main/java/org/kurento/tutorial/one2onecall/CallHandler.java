@@ -35,15 +35,18 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import java.lang.reflect.Type;
 import org.kurento.tutorial.one2onecall.codes.StatusCode;
+import org.kurento.tutorial.one2onecall.data.AppError;
 import org.kurento.tutorial.one2onecall.data.CallArgs;
 import org.kurento.tutorial.one2onecall.data.IncomingCallReq;
 import org.kurento.tutorial.one2onecall.data.Request;
 import org.kurento.tutorial.one2onecall.data.Response;
+import org.kurento.tutorial.one2onecall.data.SdpAnswer;
 import org.kurento.tutorial.one2onecall.data.User;
 import org.kurento.tutorial.one2onecall.data.UserList;
 import org.kurento.tutorial.one2onecall.exception.AppException;
 import org.kurento.tutorial.one2onecall.exception.InternalErrorCodes;
 import org.kurento.tutorial.one2onecall.exception.WSUtils;
+import org.kurento.tutorial.one2onecall.utils.SerializationUtils;
 import org.kurento.tutorial.one2onecall.utils.UserStatusEnumAdapter;
 
 /**
@@ -71,97 +74,170 @@ public class CallHandler extends TextWebSocketHandler {
 
         JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
         log.debug("Incoming message is: {}", jsonMessage);
-        
+
         String messagePayload = message.getPayload();
 
         switch (jsonMessage.get(JsonConsts.METHOD).getAsString()) {
-            case WsEndpoints.REGISTER:             
+            case WsEndpoints.REGISTER:
                 WSUtils.manageIfException(session, WsEndpoints.REGISTER, () -> register(session, messagePayload));
-                break;          
+                break;
             case WsEndpoints.USRS_LIST:
                 WSUtils.manageIfException(session, WsEndpoints.USRS_LIST, () -> sendUsrList(session));
                 break;
-                
+
             case WsEndpoints.CALL:
                 WSUtils.manageIfException(session, WsEndpoints.CALL, () -> call(session, messagePayload));
                 break;
-            
+
             case WsEndpoints.INCOMING_CALL:
-                //WSUtils.manageIfException(session,WsEndpoints.INCOMING_CALL,() -> incomingCallResponse(session, messagePayload));
+                WSUtils.manageIfException(session, WsEndpoints.INCOMING_CALL, () -> incomingCallResponse(session, messagePayload));
+                break;
+            case WsEndpoints.CHANGE_USER_STATUS:
+                WSUtils.manageIfException(session, WsEndpoints.CHANGE_USER_STATUS, () -> changeUserStatus(session, messagePayload));
                 break;
             /*    
              case "onIceCandidate": {
-                JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
-                if (userSession != null) {
-                    IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
-                            candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
-                    userSession.addCandidate(cand);
-                }
-                break;
-            }
+             JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
+             if (userSession != null) {
+             IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
+             candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
+             userSession.addCandidate(cand);
+             }
+             break;
+             }
             
-            case "stop":
-                stop(session);
-                break;*/
+             case "stop":
+             stop(session);
+             break;*/
             default:
                 break;
         }
     }
-    
-    public boolean isNewUser(WebSocketSession session){    
+
+    public boolean isNewUser(WebSocketSession session) {
         return registry.getBySession(session) == null;
+    }
+
+    private void changeUserStatus(WebSocketSession session, String jsonMessageStr) throws IOException {
+        Request<User> request = SerializationUtils.decodeRequest(jsonMessageStr, new TypeToken<Request<User>>() {
+        }.getType());
+        log.debug("receiving user status " + request.getArguments().getStatus().toString());
+        registry.changeUserStatus(session, request.getArguments().getStatus());
+        Response response = new Response.ResponseBuilder<>(WsEndpoints.CHANGE_USER_STATUS).status(StatusCode.OK.intValue()).response("").build();
+        registry.getBySession(session).sendMessage(response.toJsonStr());
     }
 
     private void sendUsrList(WebSocketSession session) throws IOException {
         Response<UserList> response = new Response.ResponseBuilder<>(WsEndpoints.USRS_LIST)
-                                                    .status(StatusCode.OK.intValue())
-                                                    .response(new UserList(registry.getUsersList())).build();
+                .status(StatusCode.OK.intValue())
+                .response(new UserList(registry.getUsersList())).build();
         WSUtils.sendMessage(session, response.toJsonStr());
     }
 
     private void register(WebSocketSession session, String jsonMessageStr) throws IOException {
-        Type reqType = new TypeToken<Request<User>>() {
-                    }.getType();
-        Request<User> request =gson.fromJson(jsonMessageStr, reqType);
+        Request<User> request = SerializationUtils.decodeRequest(jsonMessageStr, new TypeToken<Request<User>>() {
+        }.getType());
         String username = request.getArguments().getUsername();
-        
-        if (username.isEmpty()) 
+
+        if (username.isEmpty()) {
             throw new AppException(InternalErrorCodes.EMPTY_USERNAME, "empty username is not allowed");
-        else if(registry.getBySession(session)!= null)
-            throw new AppException(InternalErrorCodes.USER_ALREADY_REGISTERED, String.format("user with username %s has already an open session as %s", username,registry.getBySession(session).getUser().getUsername()));
-        else if (registry.exists(username))
-            throw new AppException(InternalErrorCodes.USER_ALREADY_REGISTERED, String.format("user with username %s is already registered",username));
-        
+        } else if (registry.getBySession(session) != null) {
+            throw new AppException(InternalErrorCodes.USER_ALREADY_REGISTERED, String.format("user with username %s has already an open session as %s", username, registry.getBySession(session).getUser().getUsername()));
+        } else if (registry.exists(username)) {
+            throw new AppException(InternalErrorCodes.USER_ALREADY_REGISTERED, String.format("user with username %s is already registered", username));
+        }
+
         UserSession newUser = new UserSession(session, new User(username, UserCallStatus.AVAILABLE));
         registry.register(newUser);
-        
+
         Response response = new Response.ResponseBuilder<>(WsEndpoints.REGISTER).status(StatusCode.OK.intValue()).response("").build();
         newUser.sendMessage(response.toJsonStr());
     }
 
     private void call(WebSocketSession session, String jsonMessageStr) throws IOException {
-        Type reqType = new TypeToken<Request<CallArgs>>() {
-                    }.getType();
-        Request<CallArgs> request =gson.fromJson(jsonMessageStr, reqType);
+        Request<CallArgs> request = SerializationUtils.decodeRequest(jsonMessageStr, new TypeToken<Request<CallArgs>>() {
+        }.getType());
         UserSession caller = registry.getBySession(session);
         String from = caller.getUser().getUsername();
         String to = request.getArguments().getTo();
         if (registry.exists(to)) {
             UserSession callee = registry.getByName(to);
-            if(callee.getUser().getStatus() == UserCallStatus.BUSY)
+            if (callee.getUser().getStatus() == UserCallStatus.BUSY) {
                 throw new AppException(InternalErrorCodes.CALLEE_BUSY, String.format("user %s is busy so he cannot be called", to));
-            
+            }
+
             caller.setSdpOffer(request.getArguments().getSdpOffer());
             caller.setCallingTo(to);
-            
+
             //request incoming call
             Request<IncomingCallReq> icReq = new Request<>(WsEndpoints.INCOMING_CALL, new IncomingCallReq(from));
             callee.sendMessage(icReq.toJsonStr());
             callee.setCallingFrom(from);
-            
-        }else{
+
+        } else {
             throw new AppException(InternalErrorCodes.USER_DOES_NOT_EXIST, String.format("User %s does not exists or disconnected so he cannot be called", to));
         }
+    }
+
+    private void incomingCallResponse(final WebSocketSession session, String jsonMessageStr) throws IOException {
+        Response<SdpAnswer> icResponse = SerializationUtils.decodeResponse(jsonMessageStr, new TypeToken<Request<SdpAnswer>>() {
+        }.getType());
+
+        final UserSession called = registry.getBySession(session);
+        final UserSession callee = registry.getByName(called.getCallingFrom());
+
+        String from = called.getCallingFrom();
+        String to = callee.getUser().getUsername();
+
+        Response responseRefused = new Response.ResponseBuilder<>(WsEndpoints.CALL).status(StatusCode.BAD_REQUEST.intValue())
+                .error(new AppError(InternalErrorCodes.CALL_REFUSED.getMessage(),
+                                String.format("call to user %s was refused", called.getUser().getUsername()),
+                                InternalErrorCodes.CALL_REFUSED.getCode()))
+                .build();
+
+        if (icResponse.getStatus() == StatusCode.OK.intValue()) {
+            log.debug("Accepted call from '{}' to '{}'", from, to);
+            CallMediaPipeline pipeline = null;
+            try {
+
+            } catch (Throwable t) {
+                log.error(t.getMessage(), t);
+
+                if (pipeline != null) {
+                    pipeline.release();
+                }
+
+                pipelines.remove(called.getSessionId());
+                pipelines.remove(callee.getSessionId());
+                WSUtils.sendMessage(callee.getSession(), responseRefused.toJsonStr());
+                throw new AppException(InternalErrorCodes.UNHANDLED_ERROR, String.format("failed to perform the call between user %s and user %s", from, to));
+            }
+
+        } else {
+            WSUtils.sendMessage(callee.getSession(), responseRefused.toJsonStr());
+        }
+
+    }
+
+    private CallMediaPipeline startCall(final UserSession called, final UserSession callee, String calledSdpOffer) {
+        CallMediaPipeline pipeline = new CallMediaPipeline(kurento);
+
+        callee.setWebRtcEndpoint(pipeline.getCalleeWebRtcEP());
+        pipeline.getCalleeWebRtcEP().addOnIceCandidateListener(event -> {
+            JsonObject iceCandidateJo = new JsonObject();
+            iceCandidateJo.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+            Request<JsonObject> iceReq = new Request<>(WsEndpoints.ICE_CANDIDATE, iceCandidateJo);
+            try {
+                synchronized (callee.getSession()) {
+                    WSUtils.sendMessage(callee.getSession(), iceReq.toJsonStr());
+                }
+            } catch (IOException e) {
+                log.debug(e.getMessage());
+            }
+        });
+        //continuare da qua
+
+        return pipeline;
     }
 
     private void incomingCallResponse(final UserSession callee, JsonObject jsonMessage) throws IOException {
@@ -275,7 +351,7 @@ public class CallHandler extends TextWebSocketHandler {
             CallMediaPipeline pipeline = pipelines.remove(sessionId);
             pipeline.release();
 
-			// Both users can stop the communication. A 'stopCommunication'
+            // Both users can stop the communication. A 'stopCommunication'
             // message will be sent to the other peer.
             UserSession stopperUser = registry.getBySession(session);
             UserSession stoppedUser = (stopperUser.getCallingFrom() != null)

@@ -1,19 +1,22 @@
 (function () {
 
-    var o2o = angular.module("o2o", ["o2o.register"]);
+    var o2o = angular.module("o2o", ["o2o.register","o2o.main"]);
 
     o2o.config(function ($routeProvider) {
 
         $routeProvider
                 .when('/main', {
                     templateUrl: '/main/main.html',
-                    controller: 'MainController',
+                    controller: 'MainCtrl',
                     controllerAs: 'mrg'
                 })
-                .otherwise({
-                    templateUrl: '../register/register.html',
+                .when('/register', {
+                    templateUrl: '/register/register.html',
                     controller: 'RegisterController',
                     controllerAs: 'rg'
+                })
+                .otherwise({
+                    redirectTo: '/register'
                 })
                 ;
     });

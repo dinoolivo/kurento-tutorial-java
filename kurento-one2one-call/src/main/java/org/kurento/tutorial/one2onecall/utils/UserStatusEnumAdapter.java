@@ -19,7 +19,7 @@ public class UserStatusEnumAdapter<T> extends TypeAdapter<T> {
 
     @Override
     public T read(JsonReader reader) throws IOException {
-        return (T)UserCallStatus.fromStr(reader.nextName());
+        return (T)UserCallStatus.fromStr(reader.nextString());
     }
 
 }
