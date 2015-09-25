@@ -9,7 +9,9 @@ public enum InternalErrorCodes {
     CALLEE_BUSY(4003,"cannot call a busy user",StatusCode.BAD_REQUEST),
     USER_DOES_NOT_EXIST(4004,"user does not exists",StatusCode.BAD_REQUEST),
     USER_STATUS_NOT_SUPPORTED(4005,"user status not supported",StatusCode.BAD_REQUEST),
-    CALL_REFUSED(4006,"call refused",StatusCode.BAD_REQUEST),
+    RESPONSE_CALL_STATUS_NOT_SUPPORTED(4006,"response call status not supported",StatusCode.BAD_REQUEST),
+    CALL_REFUSED(4007,"call refused",StatusCode.BAD_REQUEST),
+    CALL_DOES_NOT_EXIST(4008,"call does not exist",StatusCode.BAD_REQUEST),
     UNHANDLED_ERROR(5001,"unexpected server error",StatusCode.INTERNAL_SERVER_ERROR);
     
     private final int code;

@@ -8,10 +8,13 @@
         function($log,WsService,UserService,$location,$rootScope){
             var rg = this;
             //var ws = WsService.getWs();
+            var registerId = 1;
+            var statusAvailable = "AVAILABLE";
             
             var data = {
+                id: registerId,
                 method: "register",
-                arguments:{}
+                params:{}
             }
             rg.error={};
             rg.user ={};
@@ -25,7 +28,7 @@
             }
             
             rg.register = function(user){
-                data.arguments = user;
+                data.params = user;
                 var message =JSON.stringify(data);
                 $log.debug(message);
                 WsService.sendMessage(message);
@@ -39,12 +42,12 @@
                 $log.debug("received message from server:");
                 $log.debug(messageStr);
                 var message = JSON.parse(messageStr);
-                switch(message.method){
-                    case "register":
-                            if(message.status === 200){
+                switch(message.id){
+                    case registerId:
+                            if(!message.error){
                                 $log.debug("User registration succeded");
                                 UserService.setUsername(rg.user.username);
-                                UserService.setStatus("Available");
+                                UserService.setStatus(statusAvailable);
                                 $log.debug("changing root to main..");
                                 $rootScope.$apply(function(){$location.path('/main');});
                             }else{

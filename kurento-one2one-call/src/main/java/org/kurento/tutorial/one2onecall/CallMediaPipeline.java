@@ -14,6 +14,8 @@
  */
 package org.kurento.tutorial.one2onecall;
 
+import java.util.List;
+import org.kurento.client.IceCandidate;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -32,7 +34,7 @@ public class CallMediaPipeline {
 	private WebRtcEndpoint callerWebRtcEP;
 	private WebRtcEndpoint calleeWebRtcEP;
 
-	public CallMediaPipeline(KurentoClient kurento) {
+	public CallMediaPipeline(KurentoClient kurento,List<IceCandidate> iceCandidateFromList,List<IceCandidate> iceCandidateToList) {
 		try {
 			this.pipeline = kurento.createMediaPipeline();
 			this.callerWebRtcEP = new WebRtcEndpoint.Builder(pipeline).build();
@@ -40,11 +42,21 @@ public class CallMediaPipeline {
 
 			this.callerWebRtcEP.connect(this.calleeWebRtcEP);
 			this.calleeWebRtcEP.connect(this.callerWebRtcEP);
+                        
+                        iceCandidateFromList.forEach(iceCandidate -> callerWebRtcEP.addIceCandidate(iceCandidate));
+                        iceCandidateToList.forEach(iceCandidate -> calleeWebRtcEP.addIceCandidate(iceCandidate));
+                        
 		} catch (Throwable t) {
-			if (this.pipeline != null) {
-				pipeline.release();
-			}
+			releaseMediaPipeline();
 		}
+	}
+        
+        public void addCallerIceCandidate(IceCandidate e) {
+                callerWebRtcEP.addIceCandidate(e);
+	}
+        
+        public void addCalleeIceCandidate(IceCandidate e) {
+                calleeWebRtcEP.addIceCandidate(e);
 	}
 
 	public String generateSdpAnswerForCaller(String sdpOffer) {
@@ -56,9 +68,7 @@ public class CallMediaPipeline {
 	}
 
 	public void release() {
-		if (pipeline != null) {
-			pipeline.release();
-		}
+            releaseMediaPipeline();
 	}
 
 	public WebRtcEndpoint getCallerWebRtcEP() {
@@ -68,5 +78,12 @@ public class CallMediaPipeline {
 	public WebRtcEndpoint getCalleeWebRtcEP() {
 		return calleeWebRtcEP;
 	}
+        
+        private void releaseMediaPipeline(){
+            if (pipeline != null) {
+			pipeline.release();
+            }
+            pipeline = null;
+        }
 
 }

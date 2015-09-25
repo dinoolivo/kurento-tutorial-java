@@ -14,19 +14,14 @@
  */
 package org.kurento.tutorial.one2onecall;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import java.lang.reflect.Type;
 import org.kurento.client.KurentoClient;
-import org.kurento.tutorial.one2onecall.data.Request;
-import org.kurento.tutorial.one2onecall.data.User;
+import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
+import org.kurento.jsonrpc.server.JsonRpcConfigurer;
+import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.context.annotation.Import;
 
 /**
  * Video call 1 to 1 demo (main).
@@ -35,10 +30,9 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.3.1
  */
-@Configuration
-@EnableWebSocket
-@EnableAutoConfiguration
-public class One2OneCallApp implements WebSocketConfigurer {
+@Import(JsonRpcConfiguration.class)
+@SpringBootApplication
+public class One2OneCallApp implements JsonRpcConfigurer {
 
 	final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
 
@@ -51,20 +45,27 @@ public class One2OneCallApp implements WebSocketConfigurer {
 	public UserRegistry registry() {
 		return new UserRegistry();
 	}
-
+        
+        @Bean
+	public UserControl userControl() {
+		return new UserControl();
+	}
+        
+        
 	@Bean
 	public KurentoClient kurentoClient() {
 		return KurentoClient.create(System.getProperty("kms.ws.uri",
 				DEFAULT_KMS_WS_URI));
 	}
 
-        @Override
-	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(callHandler(), "/call");
-	}
 
 	public static void main(String[] args) throws Exception {
 		new SpringApplication(One2OneCallApp.class).run(args);
 	}
+
+    @Override
+    public void registerJsonRpcHandlers(JsonRpcHandlerRegistry jrhr) {
+        jrhr.addHandler(callHandler(), "/call");
+    }
 
 }

@@ -14,20 +14,15 @@
  */
 package org.kurento.tutorial.one2onecall;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import org.kurento.tutorial.one2onecall.codes.StatusCode;
-import org.kurento.tutorial.one2onecall.data.Request;
-import org.kurento.tutorial.one2onecall.data.Response;
+import org.kurento.jsonrpc.Session;
 import org.kurento.tutorial.one2onecall.data.User;
-import org.kurento.tutorial.one2onecall.data.UserList;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.web.socket.WebSocketSession;
 
 /**
  * Map of users registered in the system. This class has a concurrent hash map
@@ -38,85 +33,68 @@ import org.springframework.web.socket.WebSocketSession;
  * @since 4.3.1
  */
 public class UserRegistry {
+    
+    @Autowired
+    private NotificationService notificationService;
 
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(UserRegistry.class);
+    private static final Logger log = LoggerFactory.getLogger(UserRegistry.class);
     private final ConcurrentHashMap<String, UserSession> usersByName = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, UserSession> usersBySessionId = new ConcurrentHashMap<>();
 
     public void register(UserSession userSession) {
         usersByName.put(userSession.getUser().getUsername(), userSession);
-        usersBySessionId.put(userSession.getSession().getId(), userSession);
+        usersBySessionId.put(userSession.getSession().getSessionId(), userSession);
         
-        log.debug("user #{} registered. Sending notification to all users..",userSession.getUser().getUsername());
-        //send notification to all users
-        notifyUsers(getUsrListUpdate());
+        notificationService.register(userSession);
+        
+        log.debug(String.format("user %s registered. Sending notification to all users..",userSession.getUser().getUsername()));
+        notificationService.notifyAll(NotificationKeywords.USER_LIST, userSession.getUser());
     }
+    
+    public UserSession getBySession(Session session) {
+        return usersBySessionId.get(session.getSessionId());
+    }
+    
+    public UserSession removeBySession(Session session) {
+        final UserSession userSession = getBySession(session);
+        if (userSession != null) {
+            usersByName.remove(userSession.getUser().getUsername());
+            usersBySessionId.remove(session.getSessionId());
+            
+            notificationService.delete(userSession);
+            changeUserStatus(userSession, UserCallStatus.DISCONNECTED);
+        }
+        return userSession;
+    }
+    
+    public void changeUserStatus(Session session,UserCallStatus userCallStatus){
+        UserSession userSession = this.usersBySessionId.get(session.getSessionId());
+        changeUserStatus(userSession, userCallStatus);
+    }
+    
+    public void changeUserStatus(UserSession userSession,UserCallStatus userCallStatus){
+        userSession.getUser().setStatus(userCallStatus);
+        notificationService.notifyAll(NotificationKeywords.USER_LIST, userSession.getUser());
+    }
+    
 
     public UserSession getByName(String name) {
         return usersByName.get(name);
     }
 
-    public UserSession getBySession(WebSocketSession session) {
-        return usersBySessionId.get(session.getId());
-    }
-
+  
     public boolean exists(String name) {
         return usersByName.containsKey(name);
     }
     
     public void changeUserStatus(String username,UserCallStatus userCallStatus){
         this.usersByName.get(username).getUser().setStatus(userCallStatus);
-        
-        notifyUsers(getUsrListUpdate());
     }
     
-    public void changeUserStatus(WebSocketSession session,UserCallStatus userCallStatus){
-        this.usersBySessionId.get(session.getId()).getUser().setStatus(userCallStatus);
-        
-        notifyUsers(getUsrListUpdate());
-    }
-
-    public UserSession removeBySession(WebSocketSession session) {
-        final UserSession userSession = getBySession(session);
-        if (userSession != null) {
-            usersByName.remove(userSession.getUser().getUsername());
-            usersBySessionId.remove(session.getId());
-            
-            //send notification to all users
-            notifyUsers(getUsrListUpdate());
-        }
-        return userSession;
-    }
-
+   
     public List<User> getUsersList() {
         return usersByName.values().stream().map(userSession -> userSession.getUser())
                 .collect(Collectors.toList());
-    }
-    
-    
-    //temporary 
-    private String getUsrListUpdate(){
-        return new Response.ResponseBuilder<>(WsEndpoints.USRS_LIST)
-                                                    .status(StatusCode.OK.intValue())
-                                                    .response(new UserList(getUsersList())).build().toJsonStr();
-    }
-
-    public void notifyUsers(String message) {
-        usersByName.values().forEach(userStatus -> {
-            try {
-                userStatus.sendMessage(message);
-            } catch (IOException ex) {
-                log.error("failed to notify user " + userStatus.getUser().getUsername(), ex);
-            }
-        });
-    }
-
-    public void notifyUser(String username, String message) {
-        try {
-            usersByName.get(username).sendMessage(message);
-        } catch (IOException ex) {
-            log.error("failed to notify user " + username, ex);
-        }
     }
 
 }
