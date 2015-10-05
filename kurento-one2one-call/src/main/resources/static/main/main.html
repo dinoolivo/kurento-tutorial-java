@@ -25,31 +25,10 @@
             </div>
         </div>       
     </nav>
-
-
+    
+    <ng-call user-call="mrg.callUser"></ng-call>
+    
     <div class="row">
-        <div ng-show="mrg.callUser" class="col-lg-9">
-            <h2>Call with user {{mrg.callUser.username}}</h2>
-            <div class="row">
-                <div class="col-md-9">
-                    <div id="videoBig">
-                        <video id="videoOutput" autoplay width="640px" height="480px"
-                               poster="/img/webrtc.png"></video>
-                    </div>
-                    <div id="videoSmall">
-                        <video id="videoInput" autoplay width="240px" height="180px"
-                               poster="/img/webrtc.png"></video>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="row">                  
-                        <a class="btn btn-success col-md-6" ng-click="mrg.call(mrg.callUser)">Call</a>
-                        <a href="#" class="btn btn-primary col-md-6">Chat</a>                  
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div ng-class="{'col-lg-offset-9 col-lg-3':!mrg.callUser,'col-lg-3':mrg.callUser}">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -73,5 +52,5 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
 </div>

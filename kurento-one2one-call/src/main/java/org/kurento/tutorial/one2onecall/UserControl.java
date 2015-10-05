@@ -25,6 +25,9 @@ public class UserControl {
     
     @Autowired
     private NotificationService notificationService;
+    
+    @Autowired
+    private OverlayManager overlayManager;
  
     private static final Logger log = LoggerFactory.getLogger(UserControl.class);
     
@@ -79,7 +82,7 @@ public class UserControl {
             }
             
             //if incoming call request is sent with success set params
-            caller.createNewCallRequest(callee.getUser().getUsername(),sdpOffer,notificationService);
+            caller.createNewCallRequest(callee.getUser().getUsername(),sdpOffer,notificationService,overlayManager);
             callee.setCurrentCall(caller.getCurrentCall());
 
             caller.getCurrentCall().sendCallRequestToCallee();
@@ -133,7 +136,12 @@ public class UserControl {
     }
     
     public void stop(Transaction transaction) throws Exception{
-        registry.getBySession(transaction.getSession()).endCall();
+        UserSession userSession = registry.getBySession(transaction.getSession());
+        String from = userSession.getCurrentCall().getUsernameFrom();
+        String to = userSession.getCurrentCall().getUsernameTo();
+        registry.changeUserStatus(from, UserCallStatus.AVAILABLE);
+        registry.changeUserStatus(to, UserCallStatus.AVAILABLE);
+        userSession.endCall();
     }
     
 }

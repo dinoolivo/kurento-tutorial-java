@@ -77,6 +77,10 @@ public class UserRegistry {
         notificationService.notifyAll(NotificationKeywords.USER_LIST, userSession.getUser());
     }
     
+    public void changeUserStatus(String username,UserCallStatus userCallStatus){
+        changeUserStatus(getByName(username), userCallStatus);
+    }
+    
 
     public UserSession getByName(String name) {
         return usersByName.get(name);
@@ -87,11 +91,6 @@ public class UserRegistry {
         return usersByName.containsKey(name);
     }
     
-    public void changeUserStatus(String username,UserCallStatus userCallStatus){
-        this.usersByName.get(username).getUser().setStatus(userCallStatus);
-    }
-    
-   
     public List<User> getUsersList() {
         return usersByName.values().stream().map(userSession -> userSession.getUser())
                 .collect(Collectors.toList());

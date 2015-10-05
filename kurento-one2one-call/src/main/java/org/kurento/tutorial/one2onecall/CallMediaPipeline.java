@@ -15,6 +15,8 @@
 package org.kurento.tutorial.one2onecall;
 
 import java.util.List;
+import org.kurento.client.FaceOverlayFilter;
+import org.kurento.client.Filter;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
@@ -33,15 +35,19 @@ public class CallMediaPipeline {
 	private MediaPipeline pipeline;
 	private WebRtcEndpoint callerWebRtcEP;
 	private WebRtcEndpoint calleeWebRtcEP;
+        private OverlayManager overlayManager;
 
-	public CallMediaPipeline(KurentoClient kurento,List<IceCandidate> iceCandidateFromList,List<IceCandidate> iceCandidateToList) {
-		try {
+	public CallMediaPipeline(KurentoClient kurento,List<IceCandidate> iceCandidateFromList,List<IceCandidate> iceCandidateToList,OverlayManager overlayManager) {
+		this.overlayManager = overlayManager;
+                try {
 			this.pipeline = kurento.createMediaPipeline();
 			this.callerWebRtcEP = new WebRtcEndpoint.Builder(pipeline).build();
 			this.calleeWebRtcEP = new WebRtcEndpoint.Builder(pipeline).build();
 
-			this.callerWebRtcEP.connect(this.calleeWebRtcEP);
+                        this.callerWebRtcEP.connect(this.calleeWebRtcEP);
 			this.calleeWebRtcEP.connect(this.callerWebRtcEP);
+                        
+                        //-------------------------------------------------------------
                         
                         iceCandidateFromList.forEach(iceCandidate -> callerWebRtcEP.addIceCandidate(iceCandidate));
                         iceCandidateToList.forEach(iceCandidate -> calleeWebRtcEP.addIceCandidate(iceCandidate));
@@ -50,6 +56,22 @@ public class CallMediaPipeline {
 			releaseMediaPipeline();
 		}
 	}
+        
+        public void addOverlayElementOnCaller(int overlayId){
+            addOverlayElement(callerWebRtcEP, calleeWebRtcEP, overlayId);
+        }
+        
+        public void addOverlayElementOnCallee(int overlayId){
+            addOverlayElement(calleeWebRtcEP, callerWebRtcEP, overlayId);
+        }
+        
+        private void addOverlayElement(WebRtcEndpoint w1,WebRtcEndpoint w2,int overlayId){
+            Filter overlay = overlayManager.getFilterFromOverlayId(pipeline, overlayId);
+            w1.disconnect(w2);
+            w1.connect(overlay);
+            overlay.connect(w2);
+        }
+        
         
         public void addCallerIceCandidate(IceCandidate e) {
                 callerWebRtcEP.addIceCandidate(e);

@@ -36,9 +36,9 @@ public class NotificationService {
     public <C> void notify(String username,Notification<C> notification){
         try {
             usersByName.get(username).sendMessage(NOTIFICATION_TAG,notification);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             log.error("failed to notify user "+username, ex);
         }
     }
-    
+      
 }

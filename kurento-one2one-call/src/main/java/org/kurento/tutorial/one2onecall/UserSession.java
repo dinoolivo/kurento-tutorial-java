@@ -20,6 +20,7 @@ import org.kurento.jsonrpc.Session;
 import org.kurento.tutorial.one2onecall.data.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * User session.
@@ -37,8 +38,6 @@ public class UserSession {
         
         private CurrentCall currentCall;
 
-	
-
 	public UserSession(Session session, User user) {
 		this.session = session;
 		this.user = user;
@@ -49,15 +48,15 @@ public class UserSession {
 	}
 
 	public User getUser() {
-		return user;
+                return user;
 	}
 
         public CurrentCall getCurrentCall() {
             return currentCall;
         }
         
-        public void createNewCallRequest(String usernameTo,String sdpOffer,NotificationService notificationService) {
-            this.currentCall = new CurrentCall(user.getUsername(), usernameTo, sdpOffer,notificationService);
+        public void createNewCallRequest(String usernameTo,String sdpOffer,NotificationService notificationService,OverlayManager overlayManager) {
+            this.currentCall = new CurrentCall(user.getUsername(), usernameTo, sdpOffer,notificationService,overlayManager);
         }
 
         public void setCurrentCall(CurrentCall currentCall) {

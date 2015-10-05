@@ -28,18 +28,20 @@ public class CurrentCall {
     private final List<IceCandidate> iceCandidateToList = new LinkedList<>();
     
     private final NotificationService notificationService;
+    private final OverlayManager overlayManager;
 
-    public CurrentCall(String from, String to, String fromSdpOffer,NotificationService notificationService) {
+    public CurrentCall(String from, String to, String fromSdpOffer,NotificationService notificationService,OverlayManager overlayManager) {
         this.usernameFrom = from;
         this.usernameTo = to;
         this.fromSdpOffer = fromSdpOffer;
         this.notificationService = notificationService;
+        this.overlayManager = overlayManager;
     }
 
     public void startCall(KurentoClient kurento) throws Exception {
         log.info(String.format("Called startCall from %s to %s",usernameFrom,usernameTo));
        
-        pipeline = new CallMediaPipeline(kurento,iceCandidateFromList,iceCandidateToList);
+        pipeline = new CallMediaPipeline(kurento,iceCandidateFromList,iceCandidateToList,overlayManager);
 
         pipeline.getCalleeWebRtcEP().addOnIceCandidateListener(event -> onIceCandidate(usernameTo, event));
         String toSdpAnswer = pipeline.generateSdpAnswerForCallee(toSdpOffer);
@@ -153,8 +155,6 @@ public class CurrentCall {
 
     public String getUsernameTo() {
         return usernameTo;
-    }
-
-    
+    } 
     
 }
