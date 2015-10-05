@@ -21,7 +21,8 @@ public class OverlayManager {
     private static final OverlayElement DEFAULT_OVERLAY_ELEMENT =new OverlayElement("/img/mario-wings.png", 1,HAT_TYPE,new OverlayElement.OverlayImageProps(-0.35F, -1.2F, 1.6F, 1.6F));
     private static final Map<Integer,OverlayElement> overlayElements = new HashMap<Integer,OverlayElement>(){{
         put(1,DEFAULT_OVERLAY_ELEMENT);   
-        put(2,new OverlayElement("/img/occhiali.png", 1,GLASSES_TYPE,new OverlayElement.OverlayImageProps(0.35F, 1.2F, 1.6F, 1.6F)));   
+        put(2,new OverlayElement("/img/occhiali.png", 2,GLASSES_TYPE,new OverlayElement.OverlayImageProps(0.35F, 0F, 1.6F, 1.6F)));   
+        put(3,new OverlayElement("/img/rainy_cloud.png", 3,HAT_TYPE,new OverlayElement.OverlayImageProps(0.35F, -1.2F, 1.6F, 1.6F)));   
     }};
     
     

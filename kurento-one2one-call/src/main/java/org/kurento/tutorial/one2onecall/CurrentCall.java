@@ -68,6 +68,13 @@ public class CurrentCall {
         pipeline.getCallerWebRtcEP().gatherCandidates();
     }
     
+    public void addOverlay2User(String username,int overlayId){
+        if(username.equals(usernameFrom))
+            pipeline.addOverlayElementOnCaller(overlayId);
+        else
+            pipeline.addOverlayElementOnCallee(overlayId);
+    }
+    
     
     /**
      * Send stop communication to the other user of the call

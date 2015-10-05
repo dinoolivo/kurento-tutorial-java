@@ -10,14 +10,11 @@
 
             var mrg = this;
 
-            var userDict = {};
-
             var idUsrList = 2;
             var idUChangeUsrStatus = 3;
 
             mrg.currentUser = UserService.getUser();
-            mrg.userStatuses = [STATUS_AVAILABLE, STATUS_BUSY];
-            mrg.currStatus = mrg.currentUser.status;
+            mrg.userStatuses = UserService.getStatuses();
             mrg.callUser = null;
 
             mrg.error = {};
@@ -63,8 +60,6 @@
                 users.forEach(function (user,index,object) {
                     if(user.username == UserService.getUser().username)
                        object.splice(index, 1); 
-                    else    
-                        userDict[user.username] = user;
                 });
                 mrg.users.lst = users;
             }
@@ -111,12 +106,9 @@
                         $rootScope.$apply(function () {
                             var user = message.params.content;
                             if(user.username != UserService.getUser().username){
-                                if (userDict[user.username]) {
-                                    var idx = mrg.users.lst.indexOf(userDict[user.username]);
-                                    mrg.users.lst.splice(idx, 1);
-                                } else {
-                                    userDict[user.username] = user;
-                                }
+                                mrg.users.lst = mrg.users.lst.filter(function(lstUser){
+                                                    return (lstUser.username != user.username);  
+                                                });
                                 if (user.status != STATUS_DISCONNECTED)
                                     mrg.users.lst.push(user);
                             }

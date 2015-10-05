@@ -15,7 +15,7 @@
         }
     });
 
-    CallController.$inject = ['$scope', '$log', 'WsService'];
+    CallController.$inject = ['$scope', '$log', 'WsService','UserService','$http'];
 
     
     //call ids
@@ -34,7 +34,7 @@
     var CALL_REJECTED = "REFUSED";
     
 
-    function CallController($scope, $log, WsService) {
+    function CallController($scope, $log, WsService,UserService,$http) {
         
         var videoInput = document.getElementById('videoInput');
         var videoOutput = document.getElementById('videoOutput');
@@ -63,6 +63,26 @@
         cc.stopCall = stop;
         
         cc.onCall = false;
+        
+        cc.availableOverlays = {};
+        
+        $http.get("/overlays").then(function(data){
+            cc.availableOverlays = data.data;
+        },function(error){
+            alert("error! "+JSON.stringify(error));
+        });
+        
+        cc.addOverlay = function(oId) {
+            var message = {
+                id: 15,
+                method: "addOverlay",
+                params: {
+                    overlayId: oId
+                }
+            };
+            $log.debug("Sending addOverlay request! " + JSON.stringify(message));
+            WsService.sendMessage(JSON.stringify(message));
+        }
 
         function callWsHandler(messageStr) {
             $log.debug("received message from server:");
@@ -160,6 +180,7 @@
                             webRtcPeer.generateOffer(onOfferIncomingCall);
                         });
                 cc.onCall = true;
+                UserService.setStatus(UserService.STATUS_BUSY);
 
             } else {
                 cc.userCall = null;
@@ -223,6 +244,7 @@
                 $log.info('Call not accepted by peer. Closing call');
                 stop();
             } else {
+                UserService.setStatus(UserService.STATUS_BUSY);
                 webRtcPeer.processAnswer(message.sdpAnswer, function (error) {
                     if (error) {
                         $log.error("error on processing sdpAnswer of callResponse");

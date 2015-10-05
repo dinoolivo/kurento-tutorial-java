@@ -18,6 +18,7 @@ public class JsonFields {
         public static final String CALL_RESPONSE = "callResponse";
         public static final String START_COMMUNICATION = "startCommunication";
         public static final String STOP_COMMUNICATION = "stopCommunication";
+        public static final String OVERLAY_ID = "overlayId";
 
     }
 

@@ -17,7 +17,7 @@
                         <form name="availForm">
                             <select class="span2 navbar-btn withMarginTop" id="availSelect"
                                     ng-options="userStatus for userStatus in mrg.userStatuses"
-                                    ng-model="mrg.currStatus"
+                                    ng-model="mrg.currentUser.status"
                                     ng-change="mrg.changeUserStatus(mrg.currStatus)"></select>
                         </form>
                     </li>

@@ -8,7 +8,10 @@
                 .when('/main', {
                     templateUrl: '/main/main.html',
                     controller: 'MainCtrl',
-                    controllerAs: 'mrg'
+                    controllerAs: 'mrg',
+                    resolve: {
+                        factory: checkRouting
+                    }
                 })
                 .when('/register', {
                     templateUrl: '/register/register.html',
@@ -20,6 +23,17 @@
                 })
                 ;
     });
+    
+    function checkRouting($location,UserService,$log){
+        $log.debug("entro in checkRouting!");
+        $log.debug("UserService.getUser().length "+Object.keys(UserService.getUser()).length);
+        
+        if(Object.keys(UserService.getUser()).length > 0)
+            return true;
+        
+        $location.path("/register");
+        return false;
+    }
 })();
 
 

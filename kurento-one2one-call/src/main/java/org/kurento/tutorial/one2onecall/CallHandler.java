@@ -56,6 +56,9 @@ public class CallHandler extends DefaultJsonRpcHandler<JsonObject>  {
                 case WsEndpoints.CALL:
                     userControl.call(transaction, request);
                     break;
+                case WsEndpoints.ADD_OVERLAY:
+                    userControl.addOverlayFilter2Call(transaction, request);
+                    break;
                 case WsEndpoints.INCOMING_CALL_RESPONSE:
                     userControl.incomingCallResponse(transaction, request);
                     break;

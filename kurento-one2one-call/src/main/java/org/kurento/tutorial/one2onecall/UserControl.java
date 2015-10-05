@@ -53,6 +53,14 @@ public class UserControl {
         registry.removeBySession(session);
     }
     
+    public void addOverlayFilter2Call(Transaction transaction, Request<JsonObject> request){
+        int overlayId = request.getParams().get(JsonFields.Call.OVERLAY_ID).getAsInt();
+        
+        UserSession user = registry.getBySession(transaction.getSession());
+        
+        user.getCurrentCall().addOverlay2User(user.getUser().getUsername(), overlayId);
+    }
+    
     
     public void changeUserStatus(Transaction transaction, Request<JsonObject> request) throws Exception {
         UserCallStatus userStatus = UserCallStatus.fromStr(request.getParams().get(JsonFields.User.STATUS).getAsString());
