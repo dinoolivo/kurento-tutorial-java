@@ -79,9 +79,9 @@ div#videoSmall {
 	height: 180px;
 	padding: 0px;
 	position: absolute;
-	top: 15px;
-	left: 400px;
-	cursor: pointer;
+	bottom: 15px;
+	left: 20px;
+	//cursor: pointer;
 	z-index: 10;
 	padding: 0px;
 }
@@ -90,4 +90,16 @@ div.dragged {
 	cursor: all-scroll !important;
 	border-color: blue !important;
 	z-index: 10 !important;
+}
+
+.overlay{
+    background-color: white;
+}
+
+.overlay.selected{
+    background-color: #269abc;
+}
+
+.scrollable{
+   overflow-y:scroll;
 }

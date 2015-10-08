@@ -61,6 +61,7 @@
         
         cc.call = call;
         cc.stopCall = stop;
+        cc.toggleOverlay = toggleOverlay;
         
         cc.onCall = false;
         
@@ -68,19 +69,32 @@
         
         $http.get("/overlays").then(function(data){
             cc.availableOverlays = data.data;
+            cc.availableOverlays.forEach(function(overlay){ overlay.selected = false});
         },function(error){
             alert("error! "+JSON.stringify(error));
         });
         
-        cc.addOverlay = function(oId) {
+        cc.getOverlayClass = function(overlay){
+            var oc = "col-lg-offset-1 col-md-offset-1 col-lg-8 col-md-8 col-sm-8 col-xs-8 overlay";
+            if(overlay.selected){
+                oc+=" selected";
+            }
+            return oc;
+        }
+        
+        
+        
+        function toggleOverlay(selectedOverlay) {
+            var add = !selectedOverlay.selected;
             var message = {
-                id: 15,
-                method: "addOverlay",
+                id: add?15:16,
+                method: add?"addOverlay":"removeOverlay",
                 params: {
-                    overlayId: oId
+                    overlayId: selectedOverlay.id
                 }
             };
-            $log.debug("Sending addOverlay request! " + JSON.stringify(message));
+            selectedOverlay.selected = !selectedOverlay.selected;
+            $log.debug("Sending toggleOverlay request! " + JSON.stringify(message));
             WsService.sendMessage(JSON.stringify(message));
         }
 

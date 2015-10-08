@@ -58,7 +58,15 @@ public class UserControl {
         
         UserSession user = registry.getBySession(transaction.getSession());
         
-        user.getCurrentCall().addOverlay2User(user.getUser().getUsername(), overlayId);
+        user.getCurrentCall().addOverlay2OtherUser(user.getUser().getUsername(), overlayId);
+    }
+    
+    public void removeOverlayFilter2Call(Transaction transaction, Request<JsonObject> request){
+        int overlayId = request.getParams().get(JsonFields.Call.OVERLAY_ID).getAsInt();
+        
+        UserSession user = registry.getBySession(transaction.getSession());
+        
+        user.getCurrentCall().removeOverlay2OtherUser(user.getUser().getUsername(), overlayId);
     }
     
     
@@ -90,7 +98,7 @@ public class UserControl {
             }
             
             //if incoming call request is sent with success set params
-            caller.createNewCallRequest(callee.getUser().getUsername(),sdpOffer,notificationService,overlayManager);
+            caller.createNewCallRequest(callee,sdpOffer,notificationService,overlayManager);
             callee.setCurrentCall(caller.getCurrentCall());
 
             caller.getCurrentCall().sendCallRequestToCallee();
@@ -116,7 +124,7 @@ public class UserControl {
             //TODO check if missing field sdpOffer
             
             try{
-                caller.getCurrentCall().setToSdpOffer(request.getParams().get(JsonFields.Call.SDP_OFFER).getAsString());
+                caller.getCurrentCall().setCallUserToSdpOffer(request.getParams().get(JsonFields.Call.SDP_OFFER).getAsString());
                 caller.getCurrentCall().startCall(kurento);
             }catch(Exception e){
                 log.error("failed to start call",e);

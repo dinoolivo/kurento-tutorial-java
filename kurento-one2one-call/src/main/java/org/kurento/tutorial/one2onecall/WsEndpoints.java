@@ -10,6 +10,7 @@ public class WsEndpoints {
     public static final String INCOMING_CALL_RESPONSE = "incomingCallResponse";
     public static final String ICE_CANDIDATE = "iceCandidate";
     public static final String ADD_OVERLAY = "addOverlay";
+    public static final String REMOVE_OVERLAY = "removeOverlay";
     public static final String STOP = "stop";
     
     

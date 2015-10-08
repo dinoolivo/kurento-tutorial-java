@@ -24,12 +24,14 @@
                     </div>                 
                 </div>
             </div>
-            <div class="panel panel-default">  
+            <div class="panel panel-default" ng-show="cc.onCall">  
                 <div class="panel-heading">
                     <div class="panel-title">Accessories</div>      
                 </div>
-                <div class="row" ng-repeat="overlay in cc.availableOverlays">    
-                    <img style="cursor: pointer" class="col-lg-offset-1 col-md-offset-1 col-lg-8 col-md-8 col-sm-8 col-xs-8" src="{{overlay.url}}" ng-click="cc.addOverlay(overlay.id)">             
+                <div class="panel-body scrollable">
+                    <div class="row" ng-repeat="overlay in cc.availableOverlays">    
+                        <img style="cursor: pointer" ng-class="cc.getOverlayClass(overlay)" src="{{overlay.url}}" ng-click="cc.toggleOverlay(overlay)">             
+                    </div>
                 </div>
             </div>
         </div>

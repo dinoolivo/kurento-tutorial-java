@@ -33,7 +33,6 @@ public class CallHandler extends DefaultJsonRpcHandler<JsonObject>  {
 
     private static final Logger log = LoggerFactory.getLogger(CallHandler.class);
     
-    private final ConcurrentHashMap<String, CallMediaPipeline> pipelines = new ConcurrentHashMap<>();
 
     @Autowired
     private UserControl userControl;
@@ -58,6 +57,9 @@ public class CallHandler extends DefaultJsonRpcHandler<JsonObject>  {
                     break;
                 case WsEndpoints.ADD_OVERLAY:
                     userControl.addOverlayFilter2Call(transaction, request);
+                    break;
+                case WsEndpoints.REMOVE_OVERLAY:
+                    userControl.removeOverlayFilter2Call(transaction, request);
                     break;
                 case WsEndpoints.INCOMING_CALL_RESPONSE:
                     userControl.incomingCallResponse(transaction, request);

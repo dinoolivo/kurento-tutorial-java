@@ -55,8 +55,8 @@ public class UserSession {
             return currentCall;
         }
         
-        public void createNewCallRequest(String usernameTo,String sdpOffer,NotificationService notificationService,OverlayManager overlayManager) {
-            this.currentCall = new CurrentCall(user.getUsername(), usernameTo, sdpOffer,notificationService,overlayManager);
+        public void createNewCallRequest(UserSession userSessionTo,String sdpOffer,NotificationService notificationService,OverlayManager overlayManager) {
+            this.currentCall = new CurrentCall(this, userSessionTo, sdpOffer,notificationService,overlayManager);
         }
 
         public void setCurrentCall(CurrentCall currentCall) {
